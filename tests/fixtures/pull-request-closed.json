@@ -1,0 +1,28 @@
+{
+  "action": "closed",
+  "number": 43,
+  "pull_request": {
+    "id": 900002,
+    "number": 43,
+    "title": "Experimental spike, abandoned",
+    "html_url": "https://github.com/acme/widgets/pull/43",
+    "merged": false,
+    "merged_at": null,
+    "created_at": "2026-07-19T09:00:00Z",
+    "user": {
+      "id": 5001,
+      "login": "alex-dev",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5001",
+      "type": "User"
+    },
+    "merged_by": null,
+    "base": { "ref": "main" },
+    "head": { "ref": "alex-dev/spike" }
+  },
+  "repository": {
+    "id": 123456789,
+    "name": "widgets",
+    "full_name": "acme/widgets",
+    "private": true
+  }
+}
