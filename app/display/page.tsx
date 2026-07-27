@@ -132,12 +132,12 @@ export default function DisplayPage() {
         </div>
       </header>
 
-      <main className="mt-8 grid flex-1 grid-cols-3 gap-6 overflow-hidden">
-        <div className="col-span-2 flex flex-col gap-6">
-          <LaunchProgress week={data.week} teamName={data.settings.teamName} weeklyGoal={data.settings.weeklyGoal} />
-          <MemberScoreboard members={data.members} />
+      <main className="mt-8 grid flex-1 grid-cols-2 gap-6 overflow-hidden">
+        <div className="flex min-h-0 flex-col gap-6">
+          <LaunchProgress latestMerge={data.recentMerges[0]} />
+          <MemberScoreboard totalMerges={data.week.totalMerges} />
         </div>
-        <div className="col-span-1 overflow-hidden">
+        <div className="min-h-0 overflow-hidden">
           <ActivityFeed events={data.recentMerges} />
         </div>
       </main>

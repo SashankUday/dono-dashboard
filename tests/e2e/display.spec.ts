@@ -15,8 +15,8 @@ test.beforeEach(async ({ page }) => {
 test.describe("initial load", () => {
   test("shows a connecting state before data arrives, then the dashboard", async ({ page }) => {
     await page.goto("/display");
-    await expect(page.getByText(/connecting to merge feed/i).or(page.getByText(/this week's launch/i))).toBeVisible();
-    await expect(page.getByText(/this week's launch/i)).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/connecting to merge feed/i).or(page.getByText(/latest merge/i))).toBeVisible();
+    await expect(page.getByText(/latest merge/i)).toBeVisible({ timeout: 15_000 });
   });
 
   test("renders the connection indicator", async ({ page }) => {
@@ -45,14 +45,14 @@ test.describe("accessibility", () => {
   test("respects prefers-reduced-motion", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/display");
-    await expect(page.getByText(/this week's launch/i)).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/latest merge/i)).toBeVisible({ timeout: 15_000 });
   });
 });
 
 test.describe("resolution rendering", () => {
   test("renders without horizontal overflow at the configured viewport", async ({ page }) => {
     await page.goto("/display");
-    await expect(page.getByText(/this week's launch/i)).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/latest merge/i)).toBeVisible({ timeout: 15_000 });
     const hasHorizontalOverflow = await page.evaluate(
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
     );
@@ -63,10 +63,10 @@ test.describe("resolution rendering", () => {
 test.describe("offline handling", () => {
   test("keeps the last valid dashboard visible when offline", async ({ page, context }) => {
     await page.goto("/display");
-    await expect(page.getByText(/this week's launch/i)).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/latest merge/i)).toBeVisible({ timeout: 15_000 });
 
     await context.setOffline(true);
-    await expect(page.getByText(/this week's launch/i)).toBeVisible();
+    await expect(page.getByText(/latest merge/i)).toBeVisible();
 
     await context.setOffline(false);
   });
