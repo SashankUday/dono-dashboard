@@ -17,9 +17,9 @@ async function loadDashboard(): Promise<DashboardResponse> {
 
   if (!inFlightDashboard) {
     inFlightDashboard = (async () => {
-      const generatedAt = new Date();
-      const events = await fetchMergedPullRequests(generatedAt);
-      const response = aggregateDashboard(events, generatedAt);
+      const queryStartedAt = new Date();
+      const events = await fetchMergedPullRequests(queryStartedAt);
+      const response = aggregateDashboard(events, new Date());
       cachedDashboard = { response, expiresAt: Date.now() + mergeArenaConfig.githubCacheMs };
       return response;
     })().finally(() => {

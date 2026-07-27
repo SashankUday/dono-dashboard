@@ -28,10 +28,15 @@ export function useDashboardData() {
       }
 
       const payload = (await response.json()) as DashboardResponse;
+      const generatedAt = new Date(payload.generatedAt);
+
+      if (Number.isNaN(generatedAt.valueOf())) {
+        throw new Error("Dashboard response has an invalid generatedAt timestamp");
+      }
 
       setData(payload);
       setStatus("online");
-      setLastSuccessfulSyncAt(new Date());
+      setLastSuccessfulSyncAt(generatedAt);
       backoffMs.current = 1000;
 
       return payload;
