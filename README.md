@@ -60,8 +60,8 @@ in-memory server cache reduces GitHub API calls across open displays. GitHub
 failures return `502`; the display retains its last successful data and backs
 off before retrying.
 
-Open `/display` on the office computer. Select **Start Merge Arena** once to
-allow celebration audio and enter full screen; the preference persists
+Open `/display` on the office computer. Select **Enable sound** once to allow
+native in-page celebration audio; the preference persists
 locally. For kiosk mode:
 
 ```bash

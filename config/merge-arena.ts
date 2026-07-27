@@ -34,22 +34,22 @@ export const mergeArenaConfig = {
     SashankUday: {
       displayName: "Sashank",
       active: true,
-      mergeSoundFile: "public/audio/Sashank_Merging.mp3",
+      mergeSoundFile: "/audio/Sashank_Merging.mp3",
     },
     jujmun: {
       displayName: "Juyeon",
       active: true,
-      mergeSoundFile: "public/audio/Juyeon_Merging.mp3",
+      mergeSoundFile: "/audio/Juyeon_Merging.mp3",
     },
     JoesephBegg: {
       displayName: "Joesph",
       active: true,
-      mergeSoundFile: "public/audio/Joesph_Merging.mp3",
+      mergeSoundFile: "/audio/Joesph_Merging.mp3",
     },
     amiroopraimed: {
       displayName: "Amrit",
       active: true,
-      mergeSoundFile: "public/audio/Amrit_Merging.mp3",
+      mergeSoundFile: "/audio/Amrit_Merging.mp3",
     },
   } satisfies Record<string, MergeArenaMember>,
   botLogins: ["dependabot[bot]", "renovate[bot]", "github-actions[bot]"],

@@ -54,7 +54,7 @@ export default function DisplayPage() {
   const celebration = useCelebrationQueue();
   const initialLoadComplete = useRef(false);
   const seenEventIds = useRef(new Set<string>());
-  const { audioEnabled, isFullscreen, enableAudio, disableAudio, exitFullscreen, playMergeSound } = useMergeAudio();
+  const { audioEnabled, audioElement, enableAudio, disableAudio, playMergeSound } = useMergeAudio();
   const currentCelebration = celebration.current;
 
   useEffect(() => {
@@ -117,17 +117,8 @@ export default function DisplayPage() {
             onClick={() => void (audioEnabled ? disableAudio() : enableAudio())}
             className="rounded-full bg-white/10 px-4 py-2 text-sm text-white/80 transition hover:bg-white/20"
           >
-            {audioEnabled ? "Mute celebrations" : "Start Merge Arena"}
+            {audioEnabled ? "Sound enabled — mute" : "Enable sound"}
           </button>
-          {isFullscreen ? (
-            <button
-              type="button"
-              onClick={() => void exitFullscreen()}
-              className="rounded-full bg-white/10 px-4 py-2 text-sm text-white/80 transition hover:bg-white/20"
-            >
-              Exit full screen
-            </button>
-          ) : null}
           <ConnectionIndicator status={connectionStatus} lastSuccessfulSyncAt={lastSuccessfulSyncAt} />
         </div>
       </header>
@@ -141,6 +132,8 @@ export default function DisplayPage() {
           <ActivityFeed events={data.recentMerges} />
         </div>
       </main>
+
+      <audio ref={audioElement} preload="auto" aria-hidden />
 
       {currentCelebration ? (
         <CelebrationOverlay
