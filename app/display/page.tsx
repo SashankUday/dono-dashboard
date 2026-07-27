@@ -11,6 +11,7 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { useCelebrationQueue } from "@/hooks/useCelebrationQueue";
 import { useMergeAudio } from "@/hooks/useMergeAudio";
 import { getWeekStartKey } from "@/lib/time";
+import { mergeArenaConfig } from "@/config/merge-arena";
 
 const GOAL_MARKER_PREFIX = "merge-arena-goal-reached-";
 const LAST_SEEN_EVENT_KEY = "merge-arena:last-seen-event";
@@ -39,6 +40,13 @@ function persistLastSeenEvent(eventId: string, mergedAt: string) {
   } catch {
     // localStorage unavailable; the current page still deduplicates events.
   }
+}
+
+function getMergeSoundFile(githubLogin: string): string | undefined {
+  const member = Object.entries(mergeArenaConfig.members).find(
+    ([login]) => login.toLowerCase() === githubLogin.toLowerCase(),
+  );
+  return member?.[1].mergeSoundFile;
 }
 
 export default function DisplayPage() {
@@ -81,7 +89,9 @@ export default function DisplayPage() {
   }, [data, celebration]);
 
   useEffect(() => {
-    if (currentCelebration?.kind === "merge") playMergeSound();
+    if (currentCelebration?.kind === "merge") {
+      playMergeSound(getMergeSoundFile(currentCelebration.event.authorGithubLogin));
+    }
   }, [currentCelebration, playMergeSound]);
 
   if (!data) {

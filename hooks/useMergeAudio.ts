@@ -7,6 +7,7 @@ const AUDIO_ENABLED_KEY = "merge-arena-audio-enabled";
 export function useMergeAudio() {
   const [enabled, setEnabled] = useState(false);
   const context = useRef<AudioContext | null>(null);
+  const audioElements = useRef(new Map<string, HTMLAudioElement>());
 
   const enable = useCallback(async () => {
     try {
@@ -30,7 +31,7 @@ export function useMergeAudio() {
     setEnabled(false);
   }, []);
 
-  const play = useCallback(() => {
+  const playFallbackTone = useCallback(() => {
     const audio = context.current;
     if (!enabled || !audio || audio.state !== "running") return;
 
@@ -50,6 +51,31 @@ export function useMergeAudio() {
       // Web Audio may be unavailable on kiosk hardware; the visual celebration continues.
     }
   }, [enabled]);
+
+  const play = useCallback(
+    (soundFile?: string) => {
+      if (!enabled) return;
+
+      if (!soundFile) {
+        playFallbackTone();
+        return;
+      }
+
+      try {
+        let audio = audioElements.current.get(soundFile);
+        if (!audio) {
+          audio = new Audio(soundFile);
+          audio.preload = "auto";
+          audioElements.current.set(soundFile, audio);
+        }
+        audio.currentTime = 0;
+        void audio.play().catch(() => playFallbackTone());
+      } catch {
+        playFallbackTone();
+      }
+    },
+    [enabled, playFallbackTone],
+  );
 
   return { audioEnabled: enabled, enableAudio: enable, disableAudio: disable, playMergeSound: play };
 }

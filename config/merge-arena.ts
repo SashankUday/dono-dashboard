@@ -10,6 +10,8 @@ export type MergeArenaRepository = {
 export type MergeArenaMember = {
   displayName: string;
   active: boolean;
+  /** A file in `public/`, referenced from the site root (for example, `/audio/alex.mp3`). */
+  mergeSoundFile?: string;
 };
 
 export const mergeArenaConfig = {
@@ -29,7 +31,11 @@ export const mergeArenaConfig = {
     },
   ] satisfies readonly MergeArenaRepository[],
   members: {
-    SashankUday: { displayName: "Sashank", active: true },
+    SashankUday: {
+      displayName: "Sashank",
+      active: true,
+      mergeSoundFile: "public/audio/Sashank_Merging.mp3",
+    },
   } satisfies Record<string, MergeArenaMember>,
   botLogins: ["dependabot[bot]", "renovate[bot]", "github-actions[bot]"],
 } as const;

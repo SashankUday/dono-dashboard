@@ -18,6 +18,21 @@ privacy mode. `full` displays the title, `number_only` displays its number,
 and `generic` displays a neutral message. Unknown and inactive authors remain
 in the feed but do not count toward the team goal or scoreboard.
 
+## Per-contributor merge sounds
+
+Put each audio file in `public/audio/`, then assign it to that contributor in
+`config/merge-arena.ts` using a root-relative path. For example:
+
+```ts
+members: {
+  SashankUday: { displayName: "Sashank", active: true, mergeSoundFile: "/audio/sashank.mp3" },
+  alex: { displayName: "Alex", active: true, mergeSoundFile: "/audio/alex.mp3" },
+}
+```
+
+The GitHub login is matched case-insensitively. A contributor without a file,
+or a file that cannot play, uses the existing short celebration tone instead.
+
 Set one server-only environment variable locally and in Vercel:
 
 ```text
@@ -46,7 +61,7 @@ failures return `502`; the display retains its last successful data and backs
 off before retrying.
 
 Open `/display` on the office computer. Select **Start Merge Arena** once to
-allow the celebration tone and enter full screen; the preference persists
+allow celebration audio and enter full screen; the preference persists
 locally. For kiosk mode:
 
 ```bash
