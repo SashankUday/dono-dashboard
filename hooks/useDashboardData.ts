@@ -1,26 +1,25 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { mergeArenaConfig } from "@/config/merge-arena";
 import type { DashboardResponse } from "@/lib/types";
 
-const RECONCILIATION_INTERVAL_MS = 5 * 60 * 1000;
 const MAX_BACKOFF_MS = 60 * 1000;
-const HARD_RELOAD_AFTER_MS = 30 * 60 * 1000;
-
-export type DashboardFetchStatus = "loading" | "ready" | "error";
+export type ConnectionStatus = "connecting" | "online" | "reconnecting" | "offline";
 
 export function useDashboardData() {
   const [data, setData] = useState<DashboardResponse | null>(null);
-  const [status, setStatus] = useState<DashboardFetchStatus>("loading");
+  const [status, setStatus] = useState<ConnectionStatus>("connecting");
   const [lastSuccessfulSyncAt, setLastSuccessfulSyncAt] = useState<Date | null>(null);
 
-  const failureStreakStartedAt = useRef<number | null>(null);
   const backoffMs = useRef(1000);
-  const reconcileTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isFetching = useRef(false);
   const fetchDashboardRef = useRef<() => Promise<DashboardResponse | null>>(async () => null);
 
   const fetchDashboard = useCallback(async (): Promise<DashboardResponse | null> => {
+    if (isFetching.current) return null;
+    isFetching.current = true;
     try {
       const response = await fetch("/api/dashboard", { cache: "no-store" });
 
@@ -31,30 +30,18 @@ export function useDashboardData() {
       const payload = (await response.json()) as DashboardResponse;
 
       setData(payload);
-      setStatus("ready");
+      setStatus("online");
       setLastSuccessfulSyncAt(new Date());
-      failureStreakStartedAt.current = null;
       backoffMs.current = 1000;
 
       return payload;
     } catch (error) {
       console.error("dashboard_fetch_failed", error);
-      setStatus((current) => (current === "loading" ? "error" : current === "ready" ? "error" : current));
-
-      if (failureStreakStartedAt.current === null) {
-        failureStreakStartedAt.current = Date.now();
-      } else if (Date.now() - failureStreakStartedAt.current > HARD_RELOAD_AFTER_MS) {
-        if (typeof window !== "undefined") {
-          window.location.reload();
-        }
-      }
-
-      retryTimer.current = setTimeout(() => {
-        backoffMs.current = Math.min(backoffMs.current * 2, MAX_BACKOFF_MS);
-        void fetchDashboardRef.current();
-      }, backoffMs.current);
+      setStatus((current) => (current === "connecting" ? "offline" : "reconnecting"));
 
       return null;
+    } finally {
+      isFetching.current = false;
     }
   }, []);
 
@@ -63,15 +50,19 @@ export function useDashboardData() {
   });
 
   useEffect(() => {
-    void fetchDashboardRef.current();
-
-    reconcileTimer.current = setInterval(() => {
-      void fetchDashboardRef.current();
-    }, RECONCILIATION_INTERVAL_MS);
+    let cancelled = false;
+    const poll = async () => {
+      const result = await fetchDashboardRef.current();
+      if (cancelled) return;
+      const delay = result ? mergeArenaConfig.pollingIntervalMs : backoffMs.current;
+      if (!result) backoffMs.current = Math.min(backoffMs.current * 2, MAX_BACKOFF_MS);
+      timer.current = setTimeout(poll, delay);
+    };
+    void poll();
 
     return () => {
-      if (reconcileTimer.current) clearInterval(reconcileTimer.current);
-      if (retryTimer.current) clearTimeout(retryTimer.current);
+      cancelled = true;
+      if (timer.current) clearTimeout(timer.current);
     };
   }, []);
 

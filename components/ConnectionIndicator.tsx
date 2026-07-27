@@ -1,8 +1,8 @@
-import type { ConnectionStatus } from "@/hooks/useMergeRealtime";
+import type { ConnectionStatus } from "@/hooks/useDashboardData";
 
 const LABELS: Record<ConnectionStatus, string> = {
   connecting: "Connecting to merge feed",
-  online: "Online and subscribed",
+  online: "Online and polling",
   reconnecting: "Reconnecting",
   offline: "Offline",
 };

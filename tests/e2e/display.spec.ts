@@ -1,13 +1,16 @@
 import { test, expect } from "@playwright/test";
 
-// These end-to-end tests exercise the /display route against a running
-// application (see webServer config in playwright.config.ts). Tests that
-// depend on live merge events (new-merge celebration, queued celebrations,
-// goal-reached, offline/reconnect reconciliation) require either a seeded
-// development Supabase project (npm run seed:demo) or a webhook fixture
-// sent mid-test via scripts/send-webhook-fixture.ts. They are written
-// against that contract and should be run with a development Supabase
-// project configured.
+const dashboard = {
+  generatedAt: "2026-07-22T12:00:00.000Z",
+  settings: { teamName: "Dono", weeklyGoal: 10, timezone: "Europe/London", celebrationSeconds: 8, feedSize: 10, soundEnabled: true },
+  week: { startsAt: "2026-07-19T23:00:00.000Z", endsAt: "2026-07-26T22:59:59.999Z", totalMerges: 1, goalProgress: 0.1, goalReached: false },
+  members: [{ memberId: "SashankUday", githubLogin: "SashankUday", displayName: "Sashank", avatarUrl: null, mergeCount: 1, celebrationStyle: {} }],
+  recentMerges: [{ id: "github:SashankUday/dono:1", repositoryId: "SashankUday/dono", repositoryDisplayName: "Dono", pullRequestNumber: 1, publicTitle: "A change", pullRequestUrl: null, authorMemberId: "SashankUday", authorGithubLogin: "SashankUday", authorDisplayName: "Sashank", authorAvatarUrl: null, mergedByGithubLogin: null, mergedAt: "2026-07-21T10:00:00.000Z" }],
+};
+
+test.beforeEach(async ({ page }) => {
+  await page.route("**/api/dashboard", (route) => route.fulfill({ json: dashboard, headers: { "Cache-Control": "private, no-store" } }));
+});
 
 test.describe("initial load", () => {
   test("shows a connecting state before data arrives, then the dashboard", async ({ page }) => {
@@ -19,7 +22,7 @@ test.describe("initial load", () => {
   test("renders the connection indicator", async ({ page }) => {
     await page.goto("/display");
     await expect(
-      page.getByText(/online and subscribed|connecting|reconnecting|offline/i),
+      page.getByText(/online and polling|connecting|reconnecting|offline/i),
     ).toBeVisible({ timeout: 15_000 });
   });
 

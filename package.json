@@ -11,12 +11,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "seed:demo": "tsx scripts/seed-demo-data.ts",
-    "verify:production": "tsx scripts/verify-production.ts",
-    "webhook:fixture": "tsx scripts/send-webhook-fixture.ts"
+    "verify:production": "tsx scripts/verify-production.ts"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.110.8",
     "framer-motion": "^12.42.2",
     "next": "16.2.11",
     "react": "19.2.4",

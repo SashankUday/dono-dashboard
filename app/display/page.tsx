@@ -9,11 +9,11 @@ import { ActivityFeed } from "@/components/ActivityFeed";
 import { CelebrationOverlay } from "@/components/CelebrationOverlay";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useCelebrationQueue } from "@/hooks/useCelebrationQueue";
-import { useMergeRealtime, type ConnectionStatus } from "@/hooks/useMergeRealtime";
+import { useMergeAudio } from "@/hooks/useMergeAudio";
 import { getWeekStartKey } from "@/lib/time";
-import type { MergeEventRow } from "@/lib/github/realtime-schema";
 
 const GOAL_MARKER_PREFIX = "merge-arena-goal-reached-";
+const LAST_SEEN_EVENT_KEY = "merge-arena:last-seen-event";
 
 function hasShownGoalCelebration(weekStartKey: string): boolean {
   if (typeof window === "undefined") return true;
@@ -33,68 +33,56 @@ function markGoalCelebrationShown(weekStartKey: string) {
   }
 }
 
+function persistLastSeenEvent(eventId: string, mergedAt: string) {
+  try {
+    window.localStorage.setItem(LAST_SEEN_EVENT_KEY, JSON.stringify({ eventId, mergedAt }));
+  } catch {
+    // localStorage unavailable; the current page still deduplicates events.
+  }
+}
+
 export default function DisplayPage() {
-  const { data, status: fetchStatus, lastSuccessfulSyncAt, refetch } = useDashboardData();
+  const { data, status: connectionStatus, lastSuccessfulSyncAt } = useDashboardData();
   const celebration = useCelebrationQueue();
-  const lastSeenMergedAt = useRef<string | null>(null);
-  const previousConnectionStatus = useRef<ConnectionStatus>("connecting");
+  const initialLoadComplete = useRef(false);
+  const seenEventIds = useRef(new Set<string>());
+  const { audioEnabled, enableAudio, disableAudio, playMergeSound } = useMergeAudio();
+  const currentCelebration = celebration.current;
 
   useEffect(() => {
-    if (data && lastSeenMergedAt.current === null) {
-      lastSeenMergedAt.current = data.recentMerges[0]?.mergedAt ?? new Date(0).toISOString();
+    if (!data) return;
+
+    if (!initialLoadComplete.current) {
+      for (const event of data.recentMerges) seenEventIds.current.add(event.id);
       celebration.markInitialLoadComplete();
+      initialLoadComplete.current = true;
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data]);
+    const unseen = data.recentMerges
+      .filter((event) => !seenEventIds.current.has(event.id))
+      .sort((a, b) => new Date(a.mergedAt).valueOf() - new Date(b.mergedAt).valueOf());
+    for (const event of unseen) seenEventIds.current.add(event.id);
 
-  const handleInsert = async (row: MergeEventRow) => {
-    const fresh = await refetch();
-    if (!fresh) return;
-
-    const matched = fresh.recentMerges.find((event) => event.id === row.id);
-    if (!matched) return;
-
-    lastSeenMergedAt.current = matched.mergedAt;
-
-    const weekStartKey = getWeekStartKey(new Date());
-    const goalReachedNow = fresh.week.goalReached && !hasShownGoalCelebration(weekStartKey);
-
-    const added = celebration.enqueue(matched, goalReachedNow);
-    if (added && goalReachedNow) {
-      markGoalCelebrationShown(weekStartKey);
+    if (unseen.length > celebration.maxQueueSize) {
+      celebration.enqueueSummary(unseen.length);
+    } else {
+      let goalCelebrationAvailable = data.week.goalReached && !hasShownGoalCelebration(getWeekStartKey(new Date()));
+      for (const event of unseen) {
+        const added = celebration.enqueue(event, goalCelebrationAvailable);
+        if (added && goalCelebrationAvailable) {
+          markGoalCelebrationShown(getWeekStartKey(new Date()));
+          goalCelebrationAvailable = false;
+        }
+      }
     }
-  };
 
-  const { status: connectionStatus } = useMergeRealtime(handleInsert);
+    const newest = data.recentMerges[0];
+    if (newest) persistLastSeenEvent(newest.id, newest.mergedAt);
+  }, [data, celebration]);
 
   useEffect(() => {
-    const wasDown =
-      previousConnectionStatus.current === "reconnecting" || previousConnectionStatus.current === "offline";
-
-    if (wasDown && connectionStatus === "online") {
-      void (async () => {
-        const fresh = await refetch();
-        if (!fresh) return;
-
-        const missed = lastSeenMergedAt.current
-          ? fresh.recentMerges.filter((event) => event.mergedAt > lastSeenMergedAt.current!)
-          : [];
-
-        if (missed.length > celebration.maxQueueSize) {
-          celebration.enqueueSummary(missed.length);
-        } else {
-          for (const event of missed.slice().reverse()) {
-            celebration.enqueue(event, false);
-          }
-        }
-
-        lastSeenMergedAt.current = fresh.recentMerges[0]?.mergedAt ?? lastSeenMergedAt.current;
-      })();
-    }
-
-    previousConnectionStatus.current = connectionStatus;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [connectionStatus]);
+    if (currentCelebration?.kind === "merge") playMergeSound();
+  }, [currentCelebration, playMergeSound]);
 
   if (!data) {
     return (
@@ -102,7 +90,7 @@ export default function DisplayPage() {
         <div className="flex h-full flex-col items-center justify-center gap-6">
           <div className="h-16 w-16 animate-spin rounded-full border-4 border-white/20 border-t-white/70" />
           <p className="text-2xl text-white/70">
-            {fetchStatus === "error" ? "Reconnecting to merge feed" : "Connecting to merge feed"}
+            {connectionStatus === "offline" ? "Reconnecting to merge feed" : "Connecting to merge feed"}
           </p>
         </div>
       </ScreenShell>
@@ -113,7 +101,16 @@ export default function DisplayPage() {
     <ScreenShell>
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight text-white/90">{data.settings.teamName}</h1>
-        <ConnectionIndicator status={connectionStatus} lastSuccessfulSyncAt={lastSuccessfulSyncAt} />
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => void (audioEnabled ? disableAudio() : enableAudio())}
+            className="rounded-full bg-white/10 px-4 py-2 text-sm text-white/80 transition hover:bg-white/20"
+          >
+            {audioEnabled ? "Mute celebrations" : "Start Merge Arena"}
+          </button>
+          <ConnectionIndicator status={connectionStatus} lastSuccessfulSyncAt={lastSuccessfulSyncAt} />
+        </div>
       </header>
 
       <main className="mt-8 grid flex-1 grid-cols-3 gap-6 overflow-hidden">
@@ -126,9 +123,9 @@ export default function DisplayPage() {
         </div>
       </main>
 
-      {celebration.current ? (
+      {currentCelebration ? (
         <CelebrationOverlay
-          entry={celebration.current}
+          entry={currentCelebration}
           celebrationSeconds={data.settings.celebrationSeconds}
           week={data.week}
           weeklyGoal={data.settings.weeklyGoal}

@@ -42,32 +42,6 @@ async function main() {
     }
   });
 
-  await check("Webhook route rejects a request with missing headers", async () => {
-    const response = await fetch(`${baseUrl}/api/github/webhook`, {
-      method: "POST",
-      body: JSON.stringify({}),
-    });
-    if (response.status !== 400) {
-      throw new Error(`Expected 400 for missing headers, got ${response.status}`);
-    }
-  });
-
-  await check("Webhook route rejects an invalid signature", async () => {
-    const response = await fetch(`${baseUrl}/api/github/webhook`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-GitHub-Event": "ping",
-        "X-GitHub-Delivery": "verify-production-check",
-        "X-Hub-Signature-256": "sha256=0000000000000000000000000000000000000000000000000000000000000000",
-      },
-      body: JSON.stringify({ zen: "verify" }),
-    });
-    if (response.status !== 401) {
-      throw new Error(`Expected 401 for invalid signature, got ${response.status}`);
-    }
-  });
-
   if (process.exitCode === 1) {
     console.error("\nOne or more production checks failed.");
   } else {
