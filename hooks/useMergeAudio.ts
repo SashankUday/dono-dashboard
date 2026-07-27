@@ -1,13 +1,21 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const AUDIO_ENABLED_KEY = "merge-arena-audio-enabled";
 
 export function useMergeAudio() {
   const [enabled, setEnabled] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const context = useRef<AudioContext | null>(null);
   const audioElements = useRef(new Map<string, HTMLAudioElement>());
+
+  useEffect(() => {
+    const updateFullscreenState = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    updateFullscreenState();
+    document.addEventListener("fullscreenchange", updateFullscreenState);
+    return () => document.removeEventListener("fullscreenchange", updateFullscreenState);
+  }, []);
 
   const enable = useCallback(async () => {
     try {
@@ -29,6 +37,15 @@ export function useMergeAudio() {
       // Persisting the preference is best-effort.
     }
     setEnabled(false);
+  }, []);
+
+  const exitFullscreen = useCallback(async () => {
+    if (!document.fullscreenElement) return;
+    try {
+      await document.exitFullscreen();
+    } catch {
+      // The browser may reject an exit request while it is already closing full-screen mode.
+    }
   }, []);
 
   const playFallbackTone = useCallback(() => {
@@ -77,5 +94,12 @@ export function useMergeAudio() {
     [enabled, playFallbackTone],
   );
 
-  return { audioEnabled: enabled, enableAudio: enable, disableAudio: disable, playMergeSound: play };
+  return {
+    audioEnabled: enabled,
+    isFullscreen,
+    enableAudio: enable,
+    disableAudio: disable,
+    exitFullscreen,
+    playMergeSound: play,
+  };
 }

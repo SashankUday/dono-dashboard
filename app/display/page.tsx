@@ -54,7 +54,7 @@ export default function DisplayPage() {
   const celebration = useCelebrationQueue();
   const initialLoadComplete = useRef(false);
   const seenEventIds = useRef(new Set<string>());
-  const { audioEnabled, enableAudio, disableAudio, playMergeSound } = useMergeAudio();
+  const { audioEnabled, isFullscreen, enableAudio, disableAudio, exitFullscreen, playMergeSound } = useMergeAudio();
   const currentCelebration = celebration.current;
 
   useEffect(() => {
@@ -119,6 +119,15 @@ export default function DisplayPage() {
           >
             {audioEnabled ? "Mute celebrations" : "Start Merge Arena"}
           </button>
+          {isFullscreen ? (
+            <button
+              type="button"
+              onClick={() => void exitFullscreen()}
+              className="rounded-full bg-white/10 px-4 py-2 text-sm text-white/80 transition hover:bg-white/20"
+            >
+              Exit full screen
+            </button>
+          ) : null}
           <ConnectionIndicator status={connectionStatus} lastSuccessfulSyncAt={lastSuccessfulSyncAt} />
         </div>
       </header>
