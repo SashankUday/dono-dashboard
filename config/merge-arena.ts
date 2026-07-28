@@ -24,9 +24,9 @@ export const mergeArenaConfig = {
   githubCacheMs: 15_000,
   repositories: [
     {
-      owner: "jujmun",
-      name: "dono",
-      displayName: "Dono",
+      owner: "SashankUday",
+      name: "dono-dashboard",
+      displayName: "Dashboard",
       privacyMode: "full",
     },
   ] satisfies readonly MergeArenaRepository[],
