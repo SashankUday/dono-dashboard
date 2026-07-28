@@ -20,6 +20,41 @@ privacy mode. `full` displays the title, `number_only` displays its number,
 and `generic` displays a neutral message. Unknown and inactive authors remain
 in the feed but do not count toward the team goal or scoreboard.
 
+### Switch to another repository
+
+To track a different repository locally, make these changes before deploying:
+
+1. In `config/merge-arena.ts`, replace (or add) an entry in `repositories`:
+
+   ```ts
+   {
+     owner: "GITHUB_OWNER",
+     name: "REPOSITORY_NAME",
+     displayName: "Name shown on the dashboard",
+     privacyMode: "full",
+   }
+   ```
+
+   The tracked branch is `main`. The repository comparison is case-insensitive,
+   but the owner and name should match GitHub exactly for clarity.
+
+2. Update `members` using each contributor's GitHub login as the key. Only
+   active configured members count toward the weekly goal; anyone else still
+   appears in the activity feed.
+
+3. Update the fine-grained `GITHUB_TOKEN` to grant the new repository read
+   access to **Pull requests**, **Contents**, and **Metadata**. Put the new
+   token in `.env.local` and in Vercel's Preview and Production environments.
+
+4. In the new repository's GitHub **Settings → Webhooks**, create or update a
+   webhook pointing to `https://YOUR_DOMAIN/api/github/webhook`. Select
+   **Pushes** and **Pull requests**, use `application/json`, and set its secret
+   to the same `GITHUB_WEBHOOK_SECRET` value configured locally and in Vercel.
+
+5. Run `npm run test && npm run typecheck && npm run build`, then deploy the
+   dashboard. Keep the display open before making a test push so its new-event
+   animation can run.
+
 ## Per-contributor merge sounds
 
 Put each audio file in `public/audio/`, then assign it to that contributor in
