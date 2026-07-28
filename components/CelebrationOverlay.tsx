@@ -89,7 +89,8 @@ export function CelebrationOverlay({
             <motion.div {...enter(1.5)} className="mt-6">
               <p className="text-3xl text-white/90">{entry.event.publicTitle}</p>
               <p className="mt-2 text-xl text-white/50">
-                {entry.event.repositoryDisplayName} #{entry.event.pullRequestNumber}
+                {entry.event.repositoryDisplayName}
+                {entry.event.pullRequestNumber ? ` #${entry.event.pullRequestNumber}` : ""}
               </p>
               {entry.event.mergedByGithubLogin &&
               entry.event.mergedByGithubLogin !== entry.event.authorGithubLogin ? (

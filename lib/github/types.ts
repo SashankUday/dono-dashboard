@@ -11,6 +11,8 @@ export type GitHubPullRequest = {
   title: string;
   html_url: string;
   merged_at: string | null;
+  merge_commit_sha?: string | null;
+  base: { ref: string };
   user: GitHubUser;
   merged_by?: GitHubUser | null;
 };
@@ -29,6 +31,8 @@ export const githubPullRequestsSchema = z.array(
     title: z.string(),
     html_url: z.string(),
     merged_at: z.string().datetime().nullable(),
+    merge_commit_sha: z.string().nullable().optional(),
+    base: z.object({ ref: z.string().min(1) }),
     user: githubUserSchema,
     merged_by: githubUserSchema.nullable().optional(),
   }),

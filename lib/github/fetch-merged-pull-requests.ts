@@ -51,7 +51,12 @@ async function fetchRepositoryMerges(
     const { startsAt, endsAt } = getWeekRange(now);
 
     return parsed.data
-      .filter((pullRequest) => pullRequest.merged_at && isWithinWeek(pullRequest.merged_at, startsAt, endsAt))
+      .filter(
+        (pullRequest) =>
+          pullRequest.merged_at &&
+          pullRequest.base.ref === "main" &&
+          isWithinWeek(pullRequest.merged_at, startsAt, endsAt),
+      )
       .filter((pullRequest) => !isBotUser(pullRequest.user, botLogins))
       .map((pullRequest) => transformPullRequest(pullRequest, repository));
   } catch (error) {

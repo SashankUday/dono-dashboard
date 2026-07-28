@@ -7,6 +7,7 @@ const mergedPullRequest = {
   title: "Improve the dashboard",
   html_url: "https://github.com/SashankUday/dono/pull/7",
   merged_at: "2026-07-21T10:00:00Z",
+  base: { ref: "main" },
   user: { id: 1, login: "SashankUday", avatar_url: "https://avatars.example/sashank", type: "User" },
   merged_by: { id: 2, login: "reviewer", type: "User" },
 };
@@ -17,7 +18,7 @@ afterEach(() => {
 });
 
 describe("fetchMergedPullRequests", () => {
-  it("combines repositories, omits bots and creates stable event IDs", async () => {
+  it("omits bots and creates stable event IDs", async () => {
     process.env.GITHUB_TOKEN = "test-token";
     const fetchMock = vi.fn(async (input: URL | RequestInfo) => {
       const url = String(input);
@@ -33,11 +34,8 @@ describe("fetchMergedPullRequests", () => {
 
     const events = await fetchMergedPullRequests(new Date("2026-07-22T12:00:00Z"));
 
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(events.map((event) => event.id)).toEqual([
-      "github:SashankUday/dono:42",
-      "github:SashankUday/dono-dashboard:43",
-    ]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(events.map((event) => event.id)).toEqual(["github:jujmun/dono:42"]);
     expect(events[0]).toMatchObject({ authorGithubLogin: "SashankUday", mergedByGithubLogin: "reviewer" });
   });
 

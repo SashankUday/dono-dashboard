@@ -3,6 +3,7 @@ import { mergeArenaConfig } from "@/config/merge-arena";
 import { aggregateDashboard } from "@/lib/dashboard/aggregate";
 import { GitHubApiError } from "@/lib/github/client";
 import { fetchMergedPullRequests } from "@/lib/github/fetch-merged-pull-requests";
+import { getWebhookEvents } from "@/lib/github/webhook";
 import type { DashboardResponse } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -18,7 +19,12 @@ async function loadDashboard(): Promise<DashboardResponse> {
   if (!inFlightDashboard) {
     inFlightDashboard = (async () => {
       const queryStartedAt = new Date();
-      const events = await fetchMergedPullRequests(queryStartedAt);
+      const eventIds = new Set<string>();
+      const events = [...getWebhookEvents(), ...(await fetchMergedPullRequests(queryStartedAt))].filter((event) => {
+        if (eventIds.has(event.id)) return false;
+        eventIds.add(event.id);
+        return true;
+      });
       const response = aggregateDashboard(events, new Date());
       cachedDashboard = { response, expiresAt: Date.now() + mergeArenaConfig.githubCacheMs };
       return response;

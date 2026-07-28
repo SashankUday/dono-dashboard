@@ -22,7 +22,10 @@ export function LaunchProgress({ latestMerge }: { latestMerge: PublicMergeEvent 
             </div>
           </div>
           <p className="mt-7 text-4xl font-semibold leading-tight tracking-tight">{latestMerge.publicTitle}</p>
-          <p className="mt-4 text-lg text-white/60">{latestMerge.repositoryDisplayName} #{latestMerge.pullRequestNumber}</p>
+          <p className="mt-4 text-lg text-white/60">
+            {latestMerge.repositoryDisplayName}
+            {latestMerge.pullRequestNumber ? ` #${latestMerge.pullRequestNumber}` : ""}
+          </p>
         </div>
       ) : (
         <p className="my-auto text-2xl text-white/60">Waiting for the first merge.</p>

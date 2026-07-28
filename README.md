@@ -41,8 +41,8 @@ GITHUB_TOKEN=github_pat_or_installation_token
 
 Use a fine-grained token with read access to Pull requests and Metadata, and
 grant it access only to configured repositories. Never use a `NEXT_PUBLIC_`
-prefix. `npm run dev` starts the app; no database, migrations, webhooks, or
-seed data are required.
+prefix. `npm run dev` starts the app; no database, migrations, or seed data
+are required.
 
 ## Testing and deployment
 
@@ -60,6 +60,22 @@ in-memory server cache reduces GitHub API calls across open displays. GitHub
 failures return `502`; the display retains its last successful data and backs
 off before retrying.
 
+## GitHub webhooks
+
+Configure each repository to send `pull_request` and `push` events to
+`https://YOUR_DOMAIN/api/github/webhook`, and set the same secret in GitHub and
+in the server-only `GITHUB_WEBHOOK_SECRET` environment variable. The endpoint
+verifies GitHub's SHA-256 signature before reading the payload.
+
+Only closed, merged pull requests whose base branch is `main` are accepted.
+Only pushes to `refs/heads/main` are accepted; they cover direct pushes and
+temporarily act as a fallback if a pull-request delivery is delayed. A PR event
+replaces a matching push event by merge commit SHA, so it is counted once.
+
+Webhook events are kept in process memory. The REST polling path remains the
+durable source for merged PRs; use a shared durable event store before relying
+on direct-push events across serverless instance restarts.
+
 Open `/display` on the office computer. Select **Enable sound** once to allow
 native in-page celebration audio; the preference persists
 locally. For kiosk mode:
@@ -67,5 +83,3 @@ locally. For kiosk mode:
 ```bash
 open -a "Google Chrome" --args --kiosk --app="https://YOUR_DOMAIN/display"
 ```
-
-Remove the old GitHub webhooks from repository settings after deployment.

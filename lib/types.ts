@@ -2,8 +2,10 @@ export type PublicMergeEvent = {
   id: string;
   repositoryId: string;
   repositoryDisplayName: string;
-  pullRequestNumber: number;
+  pullRequestNumber: number | null;
   publicTitle: string;
+  /** PR body or commit message when the repository allows full details. */
+  contributionDescription?: string | null;
   pullRequestUrl: string | null;
   authorMemberId: string;
   authorGithubLogin: string;

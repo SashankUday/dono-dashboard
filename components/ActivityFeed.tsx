@@ -38,7 +38,8 @@ export function ActivityFeed({ events }: { events: PublicMergeEvent[] }) {
                   <span className="text-white/60">shipped {event.publicTitle}</span>
                 </p>
                 <p className="truncate text-sm text-white/40">
-                  {event.repositoryDisplayName} #{event.pullRequestNumber} ·{" "}
+                  {event.repositoryDisplayName}
+                  {event.pullRequestNumber ? ` #${event.pullRequestNumber}` : ""} ·{" "}
                   {formatRelativeTime(new Date(event.mergedAt), now)}
                 </p>
               </div>
