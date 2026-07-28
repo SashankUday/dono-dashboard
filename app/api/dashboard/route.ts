@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { mergeArenaConfig } from "@/config/merge-arena";
 import { aggregateDashboard } from "@/lib/dashboard/aggregate";
 import { GitHubApiError } from "@/lib/github/client";
-import { fetchMergedPullRequests } from "@/lib/github/fetch-merged-pull-requests";
-import { getWebhookEvents } from "@/lib/github/webhook";
+import { fetchRecentContributions } from "@/lib/github/fetch-recent-contributions";
 import type { DashboardResponse } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -19,13 +18,9 @@ async function loadDashboard(): Promise<DashboardResponse> {
   if (!inFlightDashboard) {
     inFlightDashboard = (async () => {
       const queryStartedAt = new Date();
-      const eventIds = new Set<string>();
-      const events = [...getWebhookEvents(), ...(await fetchMergedPullRequests(queryStartedAt))].filter((event) => {
-        if (eventIds.has(event.id)) return false;
-        eventIds.add(event.id);
-        return true;
-      });
+      const events = await fetchRecentContributions(queryStartedAt);
       const response = aggregateDashboard(events, new Date());
+      console.info("dashboard_events_loaded", { eventCount: events.length, generatedAt: response.generatedAt });
       cachedDashboard = { response, expiresAt: Date.now() + mergeArenaConfig.githubCacheMs };
       return response;
     })().finally(() => {
@@ -39,6 +34,7 @@ async function loadDashboard(): Promise<DashboardResponse> {
 export async function GET() {
   try {
     const response = await loadDashboard();
+    console.info("dashboard_events_retrieved", { eventCount: response.recentMerges.length, generatedAt: response.generatedAt });
     return NextResponse.json(response, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     if (error instanceof GitHubApiError) {

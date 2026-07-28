@@ -35,16 +35,18 @@ members: {
 The GitHub login is matched case-insensitively. A contributor without a file,
 or a file that cannot play, uses the existing short celebration tone instead.
 
-Set one server-only environment variable locally and in Vercel:
+Set these server-only environment variables locally and in Vercel:
 
 ```text
 GITHUB_TOKEN=github_pat_or_installation_token
+GITHUB_WEBHOOK_SECRET=the_same_secret_configured_in_github
 ```
 
-Use a fine-grained token with read access to Pull requests and Metadata, and
-grant it access only to configured repositories. Never use a `NEXT_PUBLIC_`
-prefix. `npm run dev` starts the app; no database, migrations, or seed data
-are required.
+Use a fine-grained token with read access to Pull requests, Contents, and
+Metadata, and grant it access only to configured repositories. Contents access
+is needed to read the durable `main` commit history for direct pushes. Never
+use a `NEXT_PUBLIC_` prefix. `npm run dev` starts the app; no database,
+migrations, or seed data are required.
 
 ## Testing and deployment
 
@@ -70,13 +72,11 @@ in the server-only `GITHUB_WEBHOOK_SECRET` environment variable. The endpoint
 verifies GitHub's SHA-256 signature before reading the payload.
 
 Only closed, merged pull requests whose base branch is `main` are accepted.
-Only pushes to `refs/heads/main` are accepted; they cover direct pushes and
-temporarily act as a fallback if a pull-request delivery is delayed. A PR event
-replaces a matching push event by merge commit SHA, so it is counted once.
-
-Webhook events are kept in process memory. The REST polling path remains the
-durable source for merged PRs; use a shared durable event store before relying
-on direct-push events across serverless instance restarts.
+Only pushes to `refs/heads/main` are accepted. The endpoint validates and logs
+each delivery, but does not keep event state in function memory. The dashboard
+polls GitHub's durable PR and `main` commit history every 20 seconds, so it
+works across Vercel function instances and restarts. A commit matching a merged
+PR's merge SHA is counted once as the PR rather than a direct push.
 
 Open `/display` on the office computer. Select **Enable sound** once to allow
 native in-page celebration audio; the preference persists

@@ -26,6 +26,7 @@ function transformPullRequest(
     repositoryDisplayName: repository.displayName,
     pullRequestNumber: pullRequest.number,
     publicTitle: publicTitle({ mode: repository.privacyMode, title: pullRequest.title, number: pullRequest.number }),
+    contributionDescription: repository.privacyMode === "full" ? pullRequest.body?.trim() || null : null,
     pullRequestUrl: pullRequest.html_url,
     authorMemberId: pullRequest.user.login,
     authorGithubLogin: pullRequest.user.login,
@@ -33,6 +34,7 @@ function transformPullRequest(
     authorAvatarUrl: pullRequest.user.avatar_url ?? null,
     mergedByGithubLogin: pullRequest.merged_by?.login ?? null,
     mergedAt,
+    commitSha: pullRequest.merge_commit_sha ?? null,
   };
 }
 

@@ -13,6 +13,8 @@ export type PublicMergeEvent = {
   authorAvatarUrl: string | null;
   mergedByGithubLogin: string | null;
   mergedAt: string;
+  /** Internal GitHub SHA used to deduplicate a PR merge and its corresponding push. */
+  commitSha?: string | null;
 };
 
 export type DashboardMember = {

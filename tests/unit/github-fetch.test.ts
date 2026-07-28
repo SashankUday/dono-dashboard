@@ -5,6 +5,7 @@ const mergedPullRequest = {
   id: 42,
   number: 7,
   title: "Improve the dashboard",
+  body: "Adds dashboard improvements.",
   html_url: "https://github.com/SashankUday/dono/pull/7",
   merged_at: "2026-07-21T10:00:00Z",
   base: { ref: "main" },
@@ -35,7 +36,7 @@ describe("fetchMergedPullRequests", () => {
     const events = await fetchMergedPullRequests(new Date("2026-07-22T12:00:00Z"));
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(events.map((event) => event.id)).toEqual(["github:jujmun/dono:42"]);
+    expect(events.map((event) => event.id)).toEqual(["github:SashankUday/dono-dashboard:43"]);
     expect(events[0]).toMatchObject({ authorGithubLogin: "SashankUday", mergedByGithubLogin: "reviewer" });
   });
 
