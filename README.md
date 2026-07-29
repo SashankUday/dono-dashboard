@@ -1,7 +1,5 @@
 # Merge Arena
 
-Built by Sashank
-
 A database-free Next.js office display for celebrating merged pull requests.
 GitHub is the source of truth: the browser polls `/api/dashboard` every 20
 seconds, and that server-only route reads GitHub's REST API.
