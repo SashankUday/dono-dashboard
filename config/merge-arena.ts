@@ -41,12 +41,12 @@ export const mergeArenaConfig = {
       active: true,
       mergeSoundFile: "/audio/Juyeon_Merging.mp3",
     },
-    JoesephBegg: {
-      displayName: "Joesph",
+    JosephBegg: {
+      displayName: "Joseph",
       active: true,
-      mergeSoundFile: "/audio/Joesph_Merging.mp3",
+      mergeSoundFile: "/audio/Joseph_Merging.mp3",
     },
-    amiroopraimed: {
+    "amirooprai-med": {
       displayName: "Amrit",
       active: true,
       mergeSoundFile: "/audio/Amrit_Merging.mp3",
