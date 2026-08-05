@@ -20,13 +20,26 @@ afterEach(() => {
 });
 
 describe("fetchRecentContributions", () => {
-  it("reads durable main commit history and excludes a PR's matching merge push", async () => {
+  it("keeps direct main commits and excludes every commit belonging to a merged PR", async () => {
     process.env.GITHUB_TOKEN = "test-token";
     vi.stubGlobal(
       "fetch",
       vi.fn(async (input: URL | RequestInfo) => {
         const url = String(input);
         if (url.includes("/pulls?")) return new Response(JSON.stringify([mergedPullRequest]), { status: 200 });
+        if (url.includes("/pulls/7/commits?")) {
+          return new Response(
+            JSON.stringify([
+              {
+                sha: "pr-commit-sha",
+                html_url: "https://github.com/SashankUday/dono-dashboard/commit/pr-commit-sha",
+                author: mergedPullRequest.user,
+                commit: { message: "PR commit", author: { name: "Sashank", date: "2026-07-28T09:00:00Z" } },
+              },
+            ]),
+            { status: 200 },
+          );
+        }
         if (url.includes("/commits?")) {
           return new Response(
             JSON.stringify([
@@ -42,6 +55,12 @@ describe("fetchRecentContributions", () => {
                 author: mergedPullRequest.user,
                 commit: { message: "Merge PR", author: { name: "Sashank", date: "2026-07-28T10:00:00Z" } },
               },
+              {
+                sha: "pr-commit-sha",
+                html_url: "https://github.com/SashankUday/dono-dashboard/commit/pr-commit-sha",
+                author: mergedPullRequest.user,
+                commit: { message: "PR commit", author: { name: "Sashank", date: "2026-07-28T09:00:00Z" } },
+              },
             ]),
             { status: 200 },
           );
@@ -53,8 +72,8 @@ describe("fetchRecentContributions", () => {
     const events = await fetchRecentContributions(new Date("2026-07-28T12:00:00Z"));
 
     expect(events.map((event) => event.id)).toEqual([
-      "github:SashankUday/dono-dashboard:commit:direct-sha",
-      "github:SashankUday/dono-dashboard:42",
+      "github:jujmun/dono:commit:direct-sha",
+      "github:jujmun/dono:42",
     ]);
     expect(events[0]).toMatchObject({ pullRequestNumber: null, authorGithubLogin: "SashankUday", publicTitle: "Ship direct change" });
   });

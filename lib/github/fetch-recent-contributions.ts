@@ -38,6 +38,26 @@ function transformCommit(commit: GitHubCommit, repository: MergeArenaRepository)
   };
 }
 
+async function fetchPullRequestCommitShas(event: PublicMergeEvent): Promise<string[]> {
+  if (!event.pullRequestNumber) return [];
+
+  const [owner, name] = event.repositoryId.split("/", 2);
+  if (!owner || !name) return [];
+
+  const commitShas: string[] = [];
+  for (let page = 1; ; page += 1) {
+    const query = new URLSearchParams({ per_page: "100", page: String(page) });
+    const payload = await githubFetch<unknown>(
+      `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(name)}/pulls/${event.pullRequestNumber}/commits?${query}`,
+    );
+    const parsed = githubCommitsSchema.safeParse(payload);
+    if (!parsed.success) throw new GitHubApiError("GitHub returned an invalid pull request commit payload", 502, false);
+
+    commitShas.push(...parsed.data.map((commit) => commit.sha));
+    if (parsed.data.length < 100) return commitShas;
+  }
+}
+
 async function fetchRepositoryMainCommits(
   repository: MergeArenaRepository,
   now: Date,
@@ -75,6 +95,11 @@ export async function fetchRecentContributions(now: Date = new Date()): Promise<
 
   for (const event of mergedPullRequests) {
     if (event.commitSha) mergedCommitShas.add(event.commitSha);
+  }
+
+  const pullRequestCommitShas = await Promise.all(mergedPullRequests.map(fetchPullRequestCommitShas));
+  for (const commitShas of pullRequestCommitShas) {
+    for (const commitSha of commitShas) mergedCommitShas.add(commitSha);
   }
 
   const mainCommitEvents = await Promise.all(

@@ -36,7 +36,7 @@ describe("fetchMergedPullRequests", () => {
     const events = await fetchMergedPullRequests(new Date("2026-07-22T12:00:00Z"));
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(events.map((event) => event.id)).toEqual(["github:SashankUday/dono-dashboard:43"]);
+    expect(events.map((event) => event.id)).toEqual(["github:jujmun/dono:42"]);
     expect(events[0]).toMatchObject({ authorGithubLogin: "SashankUday", mergedByGithubLogin: "reviewer" });
   });
 
