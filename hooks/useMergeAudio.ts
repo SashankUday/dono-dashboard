@@ -3,18 +3,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const AUDIO_ENABLED_KEY = "merge-arena-audio-enabled";
-const MAX_MERGE_SOUND_MS = 15_000;
 
 export function useMergeAudio() {
   const [enabled, setEnabled] = useState(false);
   const audioElement = useRef<HTMLAudioElement | null>(null);
-  const stopTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const stopPlayback = useCallback(() => {
-    if (stopTimer.current) {
-      clearTimeout(stopTimer.current);
-      stopTimer.current = null;
-    }
     const audio = audioElement.current;
     if (!audio) return;
     audio.pause();
@@ -51,7 +45,6 @@ export function useMergeAudio() {
       audio.src = soundFile;
       audio.loop = false;
       audio.currentTime = 0;
-      stopTimer.current = setTimeout(stopPlayback, MAX_MERGE_SOUND_MS);
       void audio.play().catch(() => {
         // A browser may still block playback if its audio policy changes after enabling.
       });
