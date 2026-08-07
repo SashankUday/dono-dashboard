@@ -6,7 +6,7 @@ export function LaunchProgress({ latestMerge }: { latestMerge: PublicMergeEvent 
   const mergedAt = latestMerge ? new Date(latestMerge.mergedAt) : null;
 
   return (
-    <section className="mt-[1.375rem] flex items-center justify-between gap-[1.25rem] rounded-[1.5rem] bg-white px-[1.875rem] py-[1.625rem] shadow-[0_0.375rem_1.125rem_rgba(43,123,84,0.08)]">
+    <section className="flex min-h-[12.4375rem] items-center justify-between gap-[1.25rem] rounded-[1.5rem] bg-white px-[1.875rem] py-[1.625rem] shadow-[0_0.375rem_1.125rem_rgba(43,123,84,0.08)]">
       <div className="min-w-0">
         <p className="text-[0.6875rem] font-bold uppercase tracking-[0.08em] text-sage">Latest merge</p>
 
@@ -38,9 +38,6 @@ export function LaunchProgress({ latestMerge }: { latestMerge: PublicMergeEvent 
           </p>
         )}
       </div>
-
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/dino.svg" alt="" aria-hidden className="w-[9.375rem] flex-shrink-0" />
     </section>
   );
 }

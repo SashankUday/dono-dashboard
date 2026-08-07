@@ -137,10 +137,11 @@ export default function DisplayPage() {
         </div>
       </header>
 
-      <LaunchProgress latestMerge={data.recentMerges[0]} />
-
-      <main className="mt-[1.125rem] grid min-h-0 flex-1 grid-cols-[17.5rem_1fr] gap-[1.125rem]">
-        <MemberScoreboard totalMerges={data.week.totalMerges} />
+      <main className="mt-[1.375rem] grid min-h-0 flex-1 grid-cols-2 gap-[1.125rem]">
+        <div className="flex min-h-0 flex-col gap-[1.125rem]">
+          <LaunchProgress latestMerge={data.recentMerges[0]} />
+          <MemberScoreboard totalMerges={data.week.totalMerges} />
+        </div>
         <div className="min-h-0 overflow-hidden">
           <ActivityFeed events={data.recentMerges} />
         </div>
