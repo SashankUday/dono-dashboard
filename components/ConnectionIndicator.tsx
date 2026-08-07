@@ -8,10 +8,10 @@ const LABELS: Record<ConnectionStatus, string> = {
 };
 
 const DOT_COLORS: Record<ConnectionStatus, string> = {
-  connecting: "bg-amber-400",
-  online: "bg-emerald-400",
-  reconnecting: "bg-amber-400",
-  offline: "bg-red-400",
+  connecting: "bg-signal-warn",
+  online: "bg-leaf",
+  reconnecting: "bg-signal-warn",
+  offline: "bg-signal-down",
 };
 
 export function ConnectionIndicator({
@@ -30,13 +30,17 @@ export function ConnectionIndicator({
     : null;
 
   return (
-    <div className="flex items-center gap-3 rounded-full bg-white/5 px-4 py-2 text-sm text-white/80 backdrop-blur">
+    <div className="flex items-center gap-[0.375rem] rounded-full bg-mist px-[0.75rem] py-[0.4375rem] text-[0.75rem] font-semibold text-forest">
       <span
-        className={`h-2.5 w-2.5 rounded-full ${DOT_COLORS[status]} ${status !== "online" ? "animate-pulse" : ""}`}
+        className={`inline-block h-[0.4375rem] w-[0.4375rem] rounded-full ${DOT_COLORS[status]} ${
+          status !== "online" ? "animate-pulse" : ""
+        }`}
         aria-hidden
       />
       <span>{LABELS[status]}</span>
-      {syncLabel ? <span className="text-white/40">Last updated {syncLabel}</span> : null}
+      {syncLabel ? (
+        <span className="font-medium text-sage-deep">· Last updated {syncLabel}</span>
+      ) : null}
     </div>
   );
 }

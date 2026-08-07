@@ -1,26 +1,75 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fredoka), var(--font-inter), ui-sans-serif, sans-serif;
+
+  /* Cream / forest palette from the Dono mockups. */
+  --color-cream: #f7f1e0;
+  --color-cream-bright: #fffdf6;
+  --color-ink: #2a2620;
+  --color-ink-muted: #8a8474;
+  --color-forest: #1f5c3f;
+  --color-leaf: #2b7b54;
+  --color-sage: #7a9c88;
+  --color-sage-deep: #5f8a70;
+  --color-mist: #e8f0e9;
+  --color-moss: #eef2e7;
+  --color-sprout: #e0ecd8;
+  --color-sand: #e3dbc4;
+  --color-sand-line: #f2ecda;
+  --color-blossom: #e98aa3;
+  --color-signal-warn: #c98a2e;
+  --color-signal-down: #c25b4e;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/*
+ * The display is designed against a 960x560 frame. Scaling the root font size
+ * against the viewport keeps every rem-based size in the mockup proportional,
+ * so the screen looks identical on a laptop and on the office TV.
+ */
+html {
+  font-size: min(calc(100vw / 60), calc(100vh / 35));
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+@keyframes dino-bounce {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-0.625rem) rotate(-2deg);
+  }
+}
+
+/* Falls the full height of the celebration overlay. Each piece sets its own
+   --confetti-drift and --confetti-spin so the field never looks tiled. */
+@keyframes confetti-fall {
+  0% {
+    transform: translate3d(0, -2rem, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(var(--confetti-drift, 0), 102vh, 0)
+      rotate(var(--confetti-spin, 400deg));
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-motion] {
+    animation: none !important;
+  }
 }

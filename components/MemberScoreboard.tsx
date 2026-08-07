@@ -1,11 +1,12 @@
 export function MemberScoreboard({ totalMerges }: { totalMerges: number }) {
   return (
-    <div className="rounded-3xl bg-white/5 p-6 backdrop-blur">
-      <p className="text-sm uppercase tracking-[0.25em] text-white/40">Informal team activity</p>
-      <div className="mt-3 flex items-baseline gap-3">
-        <span className="text-5xl font-semibold tabular-nums">{totalMerges}</span>
-        <span className="text-lg text-white/60">merges this week</span>
-      </div>
+    <div className="flex flex-col justify-center rounded-[1.5rem] bg-moss p-[1.375rem] text-center">
+      <p className="text-[0.6875rem] font-bold uppercase tracking-[0.08em] text-sage-deep">
+        Merges this week
+      </p>
+      <p className="mt-[0.375rem] font-display text-[3.5rem] font-bold tabular-nums leading-none text-leaf">
+        {totalMerges}
+      </p>
     </div>
   );
 }

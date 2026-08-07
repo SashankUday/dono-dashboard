@@ -1,21 +1,55 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { CelebrationEntry } from "@/hooks/useCelebrationQueue";
-import type { DashboardResponse } from "@/lib/types";
+import { Avatar } from "@/components/Avatar";
+
+const TRIANGLE = "polygon(50% 0, 100% 100%, 0 100%)";
+const CONFETTI_COUNT = 30;
+
+/**
+ * A fixed, seeded field of confetti. Deterministic so the server and client
+ * render the same markup, varied so the pieces never read as a repeating row.
+ * Every delay is negative, which means the overlay opens mid-shower instead of
+ * with an empty band at the top.
+ */
+const CONFETTI = (() => {
+  let seed = 20260807;
+  const random = () => {
+    seed = (seed * 1103515245 + 12345) % 2147483648;
+    return seed / 2147483648;
+  };
+
+  return Array.from({ length: CONFETTI_COUNT }, (_, index) => ({
+    left: `${(index + random()) * (100 / CONFETTI_COUNT)}%`,
+    size: `${(0.5 + random() * 0.5).toFixed(3)}rem`,
+    color: random() > 0.5 ? "#e98aa3" : "#2b7b54",
+    duration: `${(2.6 + random() * 2.4).toFixed(2)}s`,
+    delay: `${(-random() * 5).toFixed(2)}s`,
+    spin: `${Math.round((random() > 0.5 ? 1 : -1) * (360 + random() * 420))}deg`,
+    drift: `${((random() - 0.5) * 10).toFixed(2)}rem`,
+  }));
+})();
+const BOUNCE = { animation: "dino-bounce 1.6s ease-in-out infinite" };
+
+/** The pink marker-pen stroke sitting behind the headline. */
+function Highlight() {
+  return (
+    <span
+      aria-hidden
+      className="absolute inset-x-[6%] bottom-[-0.375rem] z-0 h-[0.625rem] -rotate-1 rounded-[0.375rem] bg-blossom opacity-[0.55]"
+    />
+  );
+}
 
 export function CelebrationOverlay({
   entry,
   celebrationSeconds,
-  week,
-  weeklyGoal,
   onComplete,
 }: {
   entry: CelebrationEntry;
   celebrationSeconds: number;
-  week: DashboardResponse["week"];
-  weeklyGoal: number;
   onComplete: () => void;
 }) {
   const reducedMotion = useReducedMotion();
@@ -47,7 +81,30 @@ export function CelebrationOverlay({
         };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#05060a]/95 p-[5%] text-white backdrop-blur">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-cream-bright p-[2.25rem] text-center font-sans">
+      {fadeOnly
+        ? null
+        : CONFETTI.map((piece, index) => (
+            <span
+              key={index}
+              aria-hidden
+              data-motion
+              className="absolute top-0"
+              style={
+                {
+                  width: piece.size,
+                  height: piece.size,
+                  left: piece.left,
+                  background: piece.color,
+                  clipPath: TRIANGLE,
+                  animation: `confetti-fall ${piece.duration} ${piece.delay} linear infinite`,
+                  "--confetti-drift": piece.drift,
+                  "--confetti-spin": piece.spin,
+                } as CSSProperties
+              }
+            />
+          ))}
+
       <AnimatePresence mode="wait">
         {showGoalReached ? (
           <motion.div
@@ -55,53 +112,72 @@ export function CelebrationOverlay({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="text-center"
+            className="relative z-10"
           >
-            <p className="text-2xl uppercase tracking-[0.4em] text-emerald-300">Weekly goal reached</p>
-            <p className="mt-6 text-6xl font-semibold">The team shipped it 🎉</p>
+            <p className="text-[0.875rem] font-bold uppercase tracking-[0.2em] text-sage-deep">
+              Weekly goal reached
+            </p>
+            <span className="relative mt-[1.25rem] inline-block">
+              <span className="relative z-[1] font-display text-[3rem] font-bold text-forest">
+                The team shipped it 🎉
+              </span>
+              <Highlight />
+            </span>
           </motion.div>
         ) : entry.kind === "summary" ? (
-          <motion.div key="summary" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-            <p className="text-4xl font-semibold">
+          <motion.div
+            key="summary"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="relative z-10"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/dino.svg"
+              alt=""
+              aria-hidden
+              data-motion
+              className="mx-auto w-[13rem]"
+              style={fadeOnly ? undefined : BOUNCE}
+            />
+            <p className="mt-[1.25rem] max-w-[46rem] font-display text-[2.375rem] font-semibold leading-[1.25] text-forest">
               The team shipped {entry.count}+ changes while this screen was offline.
             </p>
           </motion.div>
         ) : (
-          <motion.div key={entry.event.id} className="w-full max-w-4xl text-center">
-            <motion.div {...enter(0)} className="mx-auto flex justify-center">
-              {entry.event.authorAvatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={entry.event.authorAvatarUrl}
-                  alt=""
-                  aria-hidden
-                  className="h-32 w-32 rounded-full ring-4 ring-white/20"
-                />
-              ) : (
-                <span className="h-32 w-32 rounded-full bg-white/10" aria-hidden />
-              )}
+          <motion.div key={entry.event.id} className="relative z-10 w-full max-w-[52rem]">
+            <motion.div {...enter(0)}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/dino.svg"
+                alt=""
+                aria-hidden
+                data-motion
+                className="mx-auto w-[16.25rem]"
+                style={fadeOnly ? undefined : BOUNCE}
+              />
             </motion.div>
 
-            <motion.h2 {...enter(0.5)} className="mt-6 text-5xl font-semibold">
+            <motion.h2
+              {...enter(0.5)}
+              className="mt-[0.375rem] flex items-center justify-center gap-[0.75rem] font-display text-[2rem] font-bold text-forest"
+            >
+              <Avatar
+                src={entry.event.authorAvatarUrl}
+                name={entry.event.authorDisplayName}
+                tone="solid"
+                className="h-[3.5rem] w-[3.5rem] text-[1.125rem] font-semibold"
+              />
               {entry.event.authorDisplayName} has shipped
             </motion.h2>
 
-            <motion.div {...enter(1.5)} className="mt-6">
-              <p className="text-3xl text-white/90">{entry.event.publicTitle}</p>
-              <p className="mt-2 text-xl text-white/50">
-                {entry.event.repositoryDisplayName}
-                {entry.event.pullRequestNumber ? ` #${entry.event.pullRequestNumber}` : ""}
-              </p>
-              {entry.event.mergedByGithubLogin &&
-              entry.event.mergedByGithubLogin !== entry.event.authorGithubLogin ? (
-                <p className="mt-1 text-lg text-white/40">Merged by {entry.event.mergedByGithubLogin}</p>
-              ) : null}
-            </motion.div>
-
-            <motion.div {...enter(6.5)} className="mt-10">
-              <p className="text-lg text-white/50">
-                {week.totalMerges} / {weeklyGoal} this week
-              </p>
+            <motion.div {...enter(1.5)} className="mt-[1.25rem]">
+              <span className="relative inline-block">
+                <span className="relative z-[1] font-display text-[2.375rem] font-semibold leading-[1.25] text-forest">
+                  {entry.event.publicTitle}
+                </span>
+                <Highlight />
+              </span>
             </motion.div>
           </motion.div>
         )}

@@ -1,35 +1,46 @@
 import type { PublicMergeEvent } from "@/lib/types";
 import { formatRelativeTime } from "@/lib/time";
+import { Avatar } from "@/components/Avatar";
 
 export function LaunchProgress({ latestMerge }: { latestMerge: PublicMergeEvent | undefined }) {
   const mergedAt = latestMerge ? new Date(latestMerge.mergedAt) : null;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col justify-between rounded-3xl bg-gradient-to-br from-indigo-400/25 via-white/10 to-sky-400/15 p-8 ring-1 ring-white/15 backdrop-blur">
-      <p className="text-sm uppercase tracking-[0.3em] text-white/55">Latest merge</p>
-      {latestMerge && mergedAt ? (
-        <div className="mt-8">
-          <div className="flex items-center gap-4">
-            {latestMerge.authorAvatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={latestMerge.authorAvatarUrl} alt="" aria-hidden className="h-16 w-16 rounded-full" />
-            ) : (
-              <span className="h-16 w-16 rounded-full bg-white/15" aria-hidden />
-            )}
-            <div>
-              <p className="text-2xl font-semibold">{latestMerge.authorDisplayName}</p>
-              <p className="text-white/60">merged {formatRelativeTime(mergedAt, new Date())}</p>
+    <section className="mt-[1.375rem] flex items-center justify-between gap-[1.25rem] rounded-[1.5rem] bg-white px-[1.875rem] py-[1.625rem] shadow-[0_0.375rem_1.125rem_rgba(43,123,84,0.08)]">
+      <div className="min-w-0">
+        <p className="text-[0.6875rem] font-bold uppercase tracking-[0.08em] text-sage">Latest merge</p>
+
+        {latestMerge && mergedAt ? (
+          <>
+            <div className="mt-[0.75rem] flex items-center gap-[0.75rem]">
+              <Avatar
+                src={latestMerge.authorAvatarUrl}
+                name={latestMerge.authorDisplayName}
+                tone="solid"
+                className="h-[2.75rem] w-[2.75rem] font-display text-[0.9375rem] font-semibold"
+              />
+              <div className="min-w-0">
+                <p className="truncate text-[0.9375rem] font-bold text-ink">
+                  {latestMerge.authorDisplayName}
+                </p>
+                <p className="text-[0.75rem] text-ink-muted">
+                  merged {formatRelativeTime(mergedAt, new Date())}
+                </p>
+              </div>
             </div>
-          </div>
-          <p className="mt-7 text-4xl font-semibold leading-tight tracking-tight">{latestMerge.publicTitle}</p>
-          <p className="mt-4 text-lg text-white/60">
-            {latestMerge.repositoryDisplayName}
-            {latestMerge.pullRequestNumber ? ` #${latestMerge.pullRequestNumber}` : ""}
+            <p className="mt-[0.875rem] line-clamp-2 font-display text-[1.5rem] font-semibold leading-[1.25] text-forest">
+              {latestMerge.publicTitle}
+            </p>
+          </>
+        ) : (
+          <p className="mt-[0.875rem] font-display text-[1.5rem] font-semibold leading-[1.25] text-forest">
+            Waiting for the first merge.
           </p>
-        </div>
-      ) : (
-        <p className="my-auto text-2xl text-white/60">Waiting for the first merge.</p>
-      )}
-    </div>
+        )}
+      </div>
+
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/dino.svg" alt="" aria-hidden className="w-[9.375rem] flex-shrink-0" />
+    </section>
   );
 }

@@ -97,9 +97,17 @@ export default function DisplayPage() {
   if (!data) {
     return (
       <ScreenShell>
-        <div className="flex h-full flex-col items-center justify-center gap-6">
-          <div className="h-16 w-16 animate-spin rounded-full border-4 border-white/20 border-t-white/70" />
-          <p className="text-2xl text-white/70">
+        <div className="flex h-full flex-col items-center justify-center gap-[1.5rem]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/dino.svg"
+            alt=""
+            aria-hidden
+            data-motion
+            className="w-[10rem]"
+            style={{ animation: "dino-bounce 1.6s ease-in-out infinite" }}
+          />
+          <p className="font-display text-[1.5rem] font-semibold text-forest">
             {connectionStatus === "offline" ? "Reconnecting to merge feed" : "Connecting to merge feed"}
           </p>
         </div>
@@ -110,24 +118,29 @@ export default function DisplayPage() {
   return (
     <ScreenShell>
       <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight text-white/90">{data.settings.teamName}</h1>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-[0.75rem]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/dino.svg" alt="" aria-hidden className="w-[3.5rem]" />
+          <h1 className="font-display text-[1.625rem] font-bold text-forest">
+            {data.settings.teamName}
+          </h1>
+        </div>
+        <div className="flex items-center gap-[0.625rem]">
+          <ConnectionIndicator status={connectionStatus} lastSuccessfulSyncAt={lastSuccessfulSyncAt} />
           <button
             type="button"
             onClick={() => void (audioEnabled ? disableAudio() : enableAudio())}
-            className="rounded-full bg-white/10 px-4 py-2 text-sm text-white/80 transition hover:bg-white/20"
+            className="rounded-full border border-sand bg-white px-[0.875rem] py-[0.4375rem] text-[0.75rem] font-semibold text-ink transition hover:bg-cream"
           >
-            {audioEnabled ? "Sound enabled — mute" : "Enable sound"}
+            {audioEnabled ? "Mute sound" : "Enable sound"}
           </button>
-          <ConnectionIndicator status={connectionStatus} lastSuccessfulSyncAt={lastSuccessfulSyncAt} />
         </div>
       </header>
 
-      <main className="mt-8 grid flex-1 grid-cols-2 gap-6 overflow-hidden">
-        <div className="flex min-h-0 flex-col gap-6">
-          <LaunchProgress latestMerge={data.recentMerges[0]} />
-          <MemberScoreboard totalMerges={data.week.totalMerges} />
-        </div>
+      <LaunchProgress latestMerge={data.recentMerges[0]} />
+
+      <main className="mt-[1.125rem] grid min-h-0 flex-1 grid-cols-[17.5rem_1fr] gap-[1.125rem]">
+        <MemberScoreboard totalMerges={data.week.totalMerges} />
         <div className="min-h-0 overflow-hidden">
           <ActivityFeed events={data.recentMerges} />
         </div>
@@ -139,8 +152,6 @@ export default function DisplayPage() {
         <CelebrationOverlay
           entry={currentCelebration}
           celebrationSeconds={data.settings.celebrationSeconds}
-          week={data.week}
-          weeklyGoal={data.settings.weeklyGoal}
           onComplete={celebration.advance}
         />
       ) : null}
